@@ -1,0 +1,6 @@
+{
+  "name": "AI Career & Resume Mentor",
+  "description": "Your AI Career Mentor that analyzes resumes, provides roadmaps, and conducts mock interviews.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
