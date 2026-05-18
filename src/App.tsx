@@ -63,9 +63,7 @@ export default function App() {
           <span>Terms of Service</span>
         </div>
         <div>
-          <div>
-  © {new Date().getFullYear()} AI Career & Resume Mentor. All rights reserved.
-</div>
+          © 2024 AI Career & Resume Mentor. All rights reserved.
         </div>
       </footer>
     </div>
