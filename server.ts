@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors'; // <-- Added CORS import
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -8,6 +9,13 @@ import * as pdfParse from 'pdf-parse';
 const app = express();
 // FIX: We use Number() here to satisfy TypeScript!
 const PORT = Number(process.env.PORT) || 3000;
+
+// --- CORS CONFIGURATION (Must be before routes) ---
+app.use(cors({
+  origin: 'https://mentora-ai-sooty.vercel.app', // Allows your Vercel frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
 
 // Multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
