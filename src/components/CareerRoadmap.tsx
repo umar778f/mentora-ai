@@ -19,15 +19,21 @@ export function CareerRoadmap() {
     setIsLoading(true);
     setSelectedRole(role);
     try {
-      const res = await fetch('/api/generate-roadmap', {
+      // FIX: Added the environment variable here to point to Render instead of the relative path
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/generate-roadmap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role })
       });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setRoadmap(data);
     } catch (e) {
-      console.error(e);
+      console.error("Failed to generate roadmap:", e);
     } finally {
       setIsLoading(false);
     }

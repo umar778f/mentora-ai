@@ -24,7 +24,8 @@ export function MockInterview() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/mock-interview', {
+      // FIX: Updated to use the Vercel environment variable
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mock-interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -32,6 +33,11 @@ export function MockInterview() {
           history: messages
         })
       });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setMessages(prev => [...prev, { role: 'model', content: data.response }]);
     } catch (e) {
