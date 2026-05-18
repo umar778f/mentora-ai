@@ -14,15 +14,20 @@ export default function App() {
       const formData = new FormData();
       formData.append('resume', file);
       
-      const res = await fetch('/api/analyze-resume', {
+      // Using the Vite environment variable for the Render backend
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/analyze-resume`, {
         method: 'POST',
         body: formData,
       });
       
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setAnalysisData(data);
     } catch (e) {
-      console.error(e);
+      console.error("Upload failed:", e);
       alert('Failed to analyze resume. Please try again.');
     }
   };
@@ -69,4 +74,3 @@ export default function App() {
     </div>
   );
 }
-
