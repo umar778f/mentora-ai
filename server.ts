@@ -6,7 +6,8 @@ import multer from 'multer';
 import * as pdfParse from 'pdf-parse';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// FIX: We use Number() here to satisfy TypeScript!
+const PORT = Number(process.env.PORT) || 3000;
 
 // Multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -31,7 +32,8 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
 
     if (req.file) {
       if (req.file.mimetype === 'application/pdf') {
-        const data = await pdfParse(req.file.buffer);
+        // @ts-ignore
+        const data = await pdfParse.default(req.file.buffer);
         resumeText = data.text;
       } else {
         resumeText = req.file.buffer.toString('utf-8');
@@ -42,18 +44,16 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
       return res.status(400).json({ error: 'No resume provided.' });
     }
 
-    // In a real hackathon project, if the API key is missing or invalid, we fallback to a mock response.
-    // However, we'll try to query Gemini first.
     if (!process.env.GEMINI_API_KEY) {
       throw new Error("Missing Gemini API Key");
     }
 
     const { text } = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: `Analyze the following resume and return a JSON object evaluating it.
       
       Resume text:
-      ${resumeText.substring(0, 5000)}`, // Limit length for safety
+      ${resumeText.substring(0, 5000)}`,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -87,7 +87,6 @@ app.post('/api/analyze-resume', upload.single('resume'), async (req, res) => {
 
   } catch (error) {
     console.warn("Falling back to dummy data because of error:", error);
-    // Dummy Data Fallback for Hackathon
     return res.json({
       atsScore: 78,
       summary: "This resume has a strong foundation but lacks quantifiable achievements and keyword optimization for modern Applicant Tracking Systems (ATS).",
@@ -116,7 +115,7 @@ app.post('/api/generate-roadmap', async (req, res) => {
     }
 
     const { text } = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: `Create a learning roadmap for a ${role}. Return as JSON.`,
       config: {
         responseMimeType: 'application/json',
@@ -187,15 +186,12 @@ app.post('/api/mock-interview', async (req, res) => {
     }
 
     const chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       config: {
         systemInstruction: "You are an expert technical interviewer conducting a mock interview. Be professional, concise, and constructive. If the user provides an answer, evaluate it briefly and ask the next question. Do not break character."
       }
     });
 
-    // We can simulate chat history if needed, but for simplicity we'll just send the current message
-    // A better approach is to pass previous turns if using the SDK properly, but for the hackathon
-    // we can condense the context.
     const contextStr = history && history.length > 0 
       ? `Here is the previous conversation history:\n\n${history.map((h: any) => `${h.role}: ${h.content}`).join('\n')}\n\nNow respond to the candidate's next message:\n`
       : '';
@@ -219,10 +215,8 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // In production, serve the dist folder
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    // SPA fallback
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
